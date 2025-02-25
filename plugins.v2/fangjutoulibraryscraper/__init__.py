@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from app import schemas
-from app.chain.media import MediaChain
+from media import MediaChain
 from app.core.config import settings
 from app.core.metainfo import MetaInfoPath
 from app.db.transferhistory_oper import TransferHistoryOper
@@ -27,7 +27,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "1.1.1"
+    plugin_version = "1.2"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页
@@ -405,53 +405,8 @@ class FangjutouLibraryScraper(_PluginBase):
                                                                    mtype=mediainfo.type.value)
             if transfer_history:
                 mediainfo.title = transfer_history.title
-        # 强制修改分集元数据
-        episodes = SystemUtils.list_files(path, settings.RMT_MEDIAEXT)
-        for episode_file in episodes:
-            # 解析分集号
-            file_meta = MetaInfoPath(episode_file)
-            episode_num = file_meta.begin_episode
-            
-            if episode_num is None:
-                continue  # 跳过非分集文件
-                
-            # 创建分集元数据副本
-            episode_info = mediainfo.copy()
-            # 强制修改标题和简介
-            episode_info.title = f"第{episode_num}集"
-            episode_info.plot = ""
-            episode_info.plot_original = ""
-            episode_info.description = ""
-            
-            # 刮削分集（关键修改：传递 download_images=False）
-            self.mediachain.scrape_metadata(
-                fileitem=schemas.FileItem(
-                    storage="local",
-                    type="file",
-                    path=str(episode_file),
-                    name=episode_file.name,
-                    modify_time=episode_file.stat().st_mtime
-                ),
-                mediainfo=episode_info,
-                overwrite=True if self._mode else False,
-                download_images=False  # 显式禁用图片下载
-            )
-            logger.info(f"分集 {episode_file.name} 刮削完成（标题已重置）")
-        
-        # 刮削主目录（可选，根据需求保留）
-        logger.info(f"{path} 所有分集刮削完成")
-
-
-"""
         # 获取图片
-        # 禁用拉取分集图片
-        # self.chain.obtain_images(mediainfo)
-        
-
-        # 修改分集标题
-        if tmdbid:
-            mediainfo.plot = ""  # 禁止写入plot
-            mediainfo.title = f"第{episode_num}集"
+        self.chain.obtain_images(mediainfo)
         
         # 刮削
         self.mediachain.scrape_metadata(
@@ -467,7 +422,7 @@ class FangjutouLibraryScraper(_PluginBase):
             overwrite=True if self._mode else False
         )
         logger.info(f"{path} 刮削完成")
-"""
+
     @staticmethod
     def __get_tmdbid_from_nfo(file_path: Path):
         """
