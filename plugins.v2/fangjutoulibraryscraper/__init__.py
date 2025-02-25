@@ -19,7 +19,7 @@ from app.schemas import MediaType
 from app.utils.system import SystemUtils
 
 
-class fangjutouLibraryScraper(_PluginBase):
+class FangjutouLibraryScraper(_PluginBase):
     # 插件名称
     plugin_name = "防剧透媒体库刮削"
     # 插件描述
@@ -75,7 +75,7 @@ class fangjutouLibraryScraper(_PluginBase):
             if self._onlyonce:
                 logger.info(f"媒体库刮削服务，立即运行一次")
                 self._scheduler = BackgroundScheduler(timezone=settings.TZ)
-                self._scheduler.add_job(func=self.__libraryscraper, trigger='date',
+                self._scheduler.add_job(func=self.__fangjutoulibraryscraper, trigger='date',
                                         run_date=datetime.now(tz=pytz.timezone(settings.TZ)) + timedelta(seconds=3),
                                         name="媒体库刮削")
                 # 关闭一次性开关
@@ -119,7 +119,7 @@ class fangjutouLibraryScraper(_PluginBase):
                 "id": "fangjutouLibraryScraper",
                 "name": "防剧透媒体库刮削",
                 "trigger": CronTrigger.from_crontab(self._cron),
-                "func": self.__libraryscraper,
+                "func": self.__fangjutoulibraryscraper,
                 "kwargs": {}
             }]
         elif self._enabled:
@@ -127,7 +127,7 @@ class fangjutouLibraryScraper(_PluginBase):
                 "id": "fangjutouLibraryScraper",
                 "name": "防剧透媒体库刮削",
                 "trigger": CronTrigger.from_crontab("0 0 */7 * *"),
-                "func": self.__libraryscraper,
+                "func": self.__fangjutoulibraryscraper,
                 "kwargs": {}
             }]
         return []
@@ -295,7 +295,7 @@ class fangjutouLibraryScraper(_PluginBase):
     def get_page(self) -> List[dict]:
         pass
 
-    def __libraryscraper(self):
+    def __fangjutoulibraryscraper(self):
         """
         开始刮削媒体库
         """
