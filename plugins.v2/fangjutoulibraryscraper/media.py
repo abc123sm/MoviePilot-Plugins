@@ -43,40 +43,52 @@ class MediaChain(ChainBase, metaclass=Singleton):
         # 调用原始实现（假设原始方法返回完整的NFO内容）
         nfo_content = self.run_module("metadata_nfo", meta=meta, mediainfo=mediainfo, season=season, episode=episode)
         
-        # 如果是分集（episode存在），移除 title 和 plot
-        if episode is not None and nfo_content:
-            from xml.etree import ElementTree as ET
-            try:
-                root = ET.fromstring(nfo_content)
-            except ET.ParseError:
-                # 处理可能的 XML 格式错误
-                logger.error("NFO 内容解析失败，可能格式不正确")
-                return nfo_content
+        # 强制修改逻辑
+        from xml.etree import ElementTree as ET
+        from io import BytesIO
+        
+        try:
+            # 处理空内容（全新生成）
+            if not nfo_content:
+                root = ET.Element("episodedetails")
+            else:
+                try:
+                    root = ET.fromstring(nfo_content)
+                except ET.ParseError:
+                    root = ET.Element("episodedetails")
             
-            # 删除 title 和 plot 标签
+            # ========== 强制修改标题 ==========
+            # 删除所有现有title标签
             for elem in root.findall("title"):
                 root.remove(elem)
+            
+            # 添加新标题（必须从mediainfo获取集数）
+            if episode is None:  # 兼容无episode参数的情况
+                if mediainfo and mediainfo.episodes:
+                    episode = mediainfo.episodes[0].episode
+                else:
+                    episode = 1  # 默认值
+            
+            title_elem = ET.SubElement(root, "title")
+            title_elem.text = f"第{episode}集"
+            
+            # ========== 强制清空简介 ==========
+            # 删除所有现有plot标签
             for elem in root.findall("plot"):
                 root.remove(elem)
             
-            # 添加新标题（例如“第8集”）
-            new_title = f"第{episode}集"
-            title_elem = ET.Element("title")
-            title_elem.text = new_title
-            root.insert(0, title_elem)
+            for elem in root.findall("outline"):
+                root.remove(elem)
             
-            # 添加新标题（例如“第8集”）
-            new_plot = ""
-            title_eleme = ET.Element("plot")
-            title_eleme.text = new_plot
-            root.insert(0, title_eleme)
-            
-            # 修复 XML 声明和编码
-            from io import BytesIO
-            buffer = BytesIO()
+            # 生成标准XML
             tree = ET.ElementTree(root)
+            buffer = BytesIO()
             tree.write(buffer, encoding='utf-8', xml_declaration=True)
             return buffer.getvalue().decode('utf-8')
+        
+        except Exception as e:
+            logger.error(f"NFO生成失败：{str(e)}")
+            return None
         
         return nfo_content
 
@@ -507,15 +519,22 @@ class MediaChain(ChainBase, metaclass=Singleton):
         else:
             # 电视剧
             if fileitem.type == "file":
-                # 重新识别季集
+                # 强制从mediainfo获取集数
+                if not mediainfo or not mediainfo.episodes:
+                    logger.warn(f"{filepath.name} 无法获取分集信息")
+                    return
+                
+                # 直接从mediainfo获取季和集
+                episode = mediainfo.episodes[0].episode
+                season = mediainfo.episodes[0].season
+                
+                # 构造必要元数据
                 file_meta = MetaInfoPath(filepath)
-                if not file_meta.begin_episode:
-                    logger.warn(f"{filepath.name} 无法识别文件集数！")
-                    return
-                file_mediainfo = self.recognize_media(meta=file_meta, tmdbid=mediainfo.tmdb_id)
-                if not file_mediainfo:
-                    logger.warn(f"{filepath.name} 无法识别文件媒体信息！")
-                    return
+                file_meta.begin_season = season
+                file_meta.begin_episode = episode
+                
+                file_mediainfo = mediainfo
+                
                 # 是否已存在
                 nfo_path = filepath.with_suffix(".nfo")
                 if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=nfo_path):
