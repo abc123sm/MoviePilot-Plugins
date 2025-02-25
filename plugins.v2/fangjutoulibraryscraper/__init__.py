@@ -27,7 +27,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "1.1"
+    plugin_version = "1.0"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页
@@ -409,15 +409,10 @@ class FangjutouLibraryScraper(_PluginBase):
         # 禁用拉取分集图片
         # self.chain.obtain_images(mediainfo)
         
-        # 清空不要的字段
-        mediainfo.plot = ""  # 禁止写入plot
-        
+
         # 修改分集标题
-        if mtype == MediaType.TV:
-        # 从文件名解析集数（示例：D4DJ - S01E01.nfo -> episode=1）
-        file_meta = MetaInfoPath(path)
-        episode_num = file_meta.begin_episode
-        if episode_num:
+        if tmdbid:
+            mediainfo.plot = ""  # 禁止写入plot
             mediainfo.title = f"第{episode_num}集"
         
         # 刮削

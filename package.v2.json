@@ -3,12 +3,12 @@
         "name": "防剧透媒体库刮削",
         "description": "不刮削分集标题、分集简介、分集封面",
         "labels": "刮削",
-        "version": "1.1",
+        "version": "1.0",
         "icon": "scraper.png",
         "author": "abc123sm",
-        "level": 2,
+        "level": 1,
         "history": {
-            "v1.1": "啥都没改，先建个项目先"
+            "v1.0": "啥都没改，先建个项目先"
         }
     }
 }
