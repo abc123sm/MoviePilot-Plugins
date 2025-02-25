@@ -67,9 +67,9 @@ class MediaChain(ChainBase, metaclass=Singleton):
             
             # 添加新标题（例如“第8集”）
             new_plot = ""
-            title_elem = ET.Element("plot")
-            title_elem.text = new_plot
-            root.insert(0, title_elem)
+            title_eleme = ET.Element("plot")
+            title_eleme.text = new_plot
+            root.insert(0, title_eleme)
             
             # 修复 XML 声明和编码
             from io import BytesIO
