@@ -1,22 +1,9 @@
 {
-    "fangjutou": {
-        "name": "防剧透修改媒体库",
-        "description": "删除分集标题、分集简介、分集封面",
-        "labels": "站点,仪表板",
-        "version": "0.0",
-        "icon": "Emby_A.png",
-        "author": "abc123sm",
-        "level": 2,
-        "history": {
-            "v1.6": "优化了站点数据获取失败时的回退逻辑",
-            "v0.0": "啥都没改，先建个项目先"
-        }
-    },
     "fangjutouLibraryScraper": {
         "name": "防剧透媒体库刮削",
         "description": "不刮削分集标题、分集简介、分集封面",
-        "labels": "探索",
-        "version": "0.0",
+        "labels": "刮削",
+        "version": "0.1",
         "icon": "scraper.png",
         "author": "abc123sm",
         "level": 1,
