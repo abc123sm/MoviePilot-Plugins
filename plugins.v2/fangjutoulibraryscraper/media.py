@@ -474,28 +474,35 @@ class MediaChain(ChainBase, metaclass=Singleton):
                 if not file_meta.begin_episode:
                     logger.warn(f"{filepath.name} 无法识别文件集数！")
                     return
+                
+                # 合并父目录元数据（例如Season目录）
+                if parent:
+                    parent_meta = MetaInfoPath(Path(parent.path))
+                    file_meta.merge(parent_meta)
+                
+                # ==== 核心修改开始 ====
+                # 强制设置分集标题和清空简介
+                file_meta.title = f"第{file_meta.begin_episode}集"
+                file_meta.outline = ""
+                file_meta.plot = ""
+                # ==== 核心修改结束 ====
+                
                 file_mediainfo = self.recognize_media(meta=file_meta, tmdbid=mediainfo.tmdb_id)
                 if not file_mediainfo:
                     logger.warn(f"{filepath.name} 无法识别文件媒体信息！")
                     return
-                file_meta.title = f"第{file_meta.begin_episode}集"  # 设置标题为“第X集”
-                file_meta.outline = ""  # 清空简介
-                file_meta.plot = ""     # 清空详细描述
-                # 是否已存在
+                
+                # 生成nfo文件
                 nfo_path = filepath.with_suffix(".nfo")
                 if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=nfo_path):
-                    # 获取集的nfo文件
                     episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
-                                                    season=file_meta.begin_season, episode=file_meta.begin_episode)
+                                                   season=file_meta.begin_season, episode=file_meta.begin_episode)
                     if episode_nfo:
-                        # 保存或上传nfo文件到上级目录
-                        if not parent:
-                            parent = self.storagechain.get_parent_item(fileitem)
                         __save_file(_fileitem=parent, _path=nfo_path, _content=episode_nfo)
                     else:
                         logger.warn(f"{filepath.name} nfo文件生成失败！")
                 else:
-                    logger.info(f"已存在nfo文件：{nfo_path}")
+                logger.info(f"已存在nfo文件：{nfo_path}")
                 # 获取集的图片
                 image_dict = self.metadata_img(mediainfo=file_mediainfo,
                                                season=file_meta.begin_season, episode=file_meta.begin_episode)
