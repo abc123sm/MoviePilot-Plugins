@@ -46,22 +46,37 @@ class MediaChain(ChainBase, metaclass=Singleton):
         # 如果是分集（episode存在），移除 title 和 plot
         if episode is not None and nfo_content:
             from xml.etree import ElementTree as ET
-            root = ET.fromstring(nfo_content)
+            try:
+                root = ET.fromstring(nfo_content)
+            except ET.ParseError:
+                # 处理可能的 XML 格式错误
+                logger.error("NFO 内容解析失败，可能格式不正确")
+                return nfo_content
             
-            # 删除 <title> 和 <plot> 标签
+            # 删除 title 和 plot 标签
             for elem in root.findall("title"):
                 root.remove(elem)
             for elem in root.findall("plot"):
                 root.remove(elem)
             
-            # 添加新的标题（例如“第8集”）
+            # 添加新标题（例如“第8集”）
             new_title = f"第{episode}集"
             title_elem = ET.Element("title")
             title_elem.text = new_title
             root.insert(0, title_elem)
             
-            # 返回修改后的XML内容
-            return ET.tostring(root, encoding="utf-8", xml_declaration=True).decode()
+            # 添加新标题（例如“第8集”）
+            new_plot = ""
+            title_elem = ET.Element("plot")
+            title_elem.text = new_plot
+            root.insert(0, title_elem)
+            
+            # 修复 XML 声明和编码
+            from io import BytesIO
+            buffer = BytesIO()
+            tree = ET.ElementTree(root)
+            tree.write(buffer, encoding='utf-8', xml_declaration=True)
+            return buffer.getvalue().decode('utf-8')
         
         return nfo_content
 
