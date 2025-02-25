@@ -77,7 +77,7 @@ class FangjutouLibraryScraper(_PluginBase):
                 self._scheduler = BackgroundScheduler(timezone=settings.TZ)
                 self._scheduler.add_job(func=self.__fangjutoulibraryscraper, trigger='date',
                                         run_date=datetime.now(tz=pytz.timezone(settings.TZ)) + timedelta(seconds=3),
-                                        name="媒体库刮削")
+                                        name="防剧透媒体库刮削")
                 # 关闭一次性开关
                 self._onlyonce = False
                 self.update_config({
@@ -419,8 +419,6 @@ class FangjutouLibraryScraper(_PluginBase):
         episode_num = file_meta.begin_episode
         if episode_num:
             mediainfo.title = f"第{episode_num}集"
-        else:
-            mediainfo.title = mediainfo.episode  # 无法解析集数时清空标题
         
         # 刮削
         self.mediachain.scrape_metadata(
