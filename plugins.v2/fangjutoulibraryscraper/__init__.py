@@ -27,7 +27,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "1.1"
+    plugin_version = "1.1.1"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页
@@ -470,12 +470,10 @@ class FangjutouLibraryScraper(_PluginBase):
 """
     @staticmethod
     def __get_tmdbid_from_nfo(file_path: Path):
-        
         """
         从nfo文件中获取信息
         :param file_path:
         :return: tmdbid
-        """
         """
         if not file_path:
             return None
