@@ -44,47 +44,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
         """
         return self.run_module("metadata_nfo", meta=meta, mediainfo=mediainfo, season=season, episode=episode)
 
-def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
-    """
-    修改电视剧分集NFO文件内容
-    :param nfo_content: 原始NFO内容
-    :param episode_num: 集号
-    :return: 修改后的NFO内容
-    """
-    if not nfo_content:
-        return nfo_content
-    
-    try:
-        # 保留XML声明
-        xml_declaration = ""
-        if nfo_content.startswith('<?xml'):
-            declaration_end = nfo_content.find('?>') + 2
-            xml_declaration = nfo_content[:declaration_end]
-            nfo_content = nfo_content[declaration_end:]
-        
-        # 解析XML
-        root = ET.fromstring(nfo_content)
-        
-        # 修改标题为"第X集"
-        title_element = root.find('.//title')
-        if title_element is not None:
-            title_element.text = f"第{episode_num}集"
-        
-        # 清空简介字段
-        plot_element = root.find('.//plot')
-        if plot_element is not None:
-            plot_element.text = "<![CDATA[]]>"
-            
-        outline_element = root.find('.//outline')
-        if outline_element is not None:
-            outline_element.text = "<![CDATA[]]>"
-        
-        # 将修改后的XML转回字符串，并添加回XML声明
-        modified_xml = ET.tostring(root, encoding='utf-8').decode('utf-8')
-        return xml_declaration + modified_xml
-    except Exception as e:
-        logger.error(f"修改NFO文件失败: {str(e)}，将使用原始内容")
-        return nfo_content
+
 
 
     def recognize_by_meta(self, metainfo: MetaBase) -> Optional[MediaInfo]:
@@ -530,9 +490,6 @@ def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
                     episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
                                                     season=file_meta.begin_season, episode=file_meta.begin_episode)
                     if episode_nfo:
-                        # 修改NFO内容：清空剧情简介并修改标题
-                        episode_nfo = self.modify_episode_nfo(episode_nfo, file_meta.begin_episode)
-                        
                         # 保存或上传nfo文件到上级目录
                         if not parent:
                             parent = self.storagechain.get_parent_item(fileitem)
