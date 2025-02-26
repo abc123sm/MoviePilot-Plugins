@@ -23,11 +23,11 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件名称
     plugin_name = "防剧透媒体库刮削"
     # 插件描述
-    plugin_desc = "定时对媒体库进行刮削，补齐缺失元数据和图片，同时不刮削分集标题、分集简介、分集封面，以防止剧透。"
+    plugin_desc = "还在写代码，本插件目前不可用，定时对媒体库进行刮削，补齐缺失元数据和图片，同时不刮削分集标题、分集简介、分集封面，以防止剧透。"
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "1.6.7"
+    plugin_version = "1.6.8"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页

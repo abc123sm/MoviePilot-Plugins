@@ -43,36 +43,39 @@ class MediaChain(ChainBase, metaclass=Singleton):
         """
         return self.run_module("metadata_nfo", meta=meta, mediainfo=mediainfo, season=season, episode=episode)
 
-    def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
-        """
-        修改分集NFO文件内容
-        :param nfo_content: NFO文件内容
-        :param episode_num: 集号
-        :return: 修改后的NFO文件内容
-        """
-        try:
-            # 解析XML内容
-            root = ET.fromstring(nfo_content)
+def modify_episode_nfo(nfo_content: str, episode_num: int) -> str:
+    """
+    修改电视剧分集NFO文件内容
+    :param nfo_content: 原始NFO内容
+    :param episode_num: 集号
+    :return: 修改后的NFO内容
+    """
+    if not nfo_content:
+        return nfo_content
+    
+    try:
+        # 解析XML
+        root = ET.fromstring(nfo_content)
+        
+        # 修改标题为"第X集"
+        title_elements = root.findall('.//title')
+        for title_element in title_elements:
+            title_element.text = f"第{episode_num}集"
+        
+        # 清空简介字段
+        plot_elements = root.findall('.//plot')
+        for plot_element in plot_elements:
+            plot_element.text = ""
             
-            # 修改标题为"第X集"
-            title_element = root.find("title")
-            if title_element is not None:
-                title_element.text = f"第{episode_num}集"
-            
-            # 清空简介字段
-            plot_element = root.find("plot")
-            if plot_element is not None:
-                plot_element.text = ""
-                
-            outline_element = root.find("outline")
-            if outline_element is not None:
-                outline_element.text = ""
-            
-            # 转换回字符串
-            return ET.tostring(root, encoding='utf-8', method='xml').decode('utf-8')
-        except Exception as e:
-            logger.error(f"修改NFO文件失败: {str(e)}")
-            return nfo_content
+        outline_elements = root.findall('.//outline')
+        for outline_element in outline_elements:
+            outline_element.text = ""
+        
+        # 将修改后的XML转回字符串
+        return ET.tostring(root, encoding='utf-8').decode('utf-8')
+    except Exception as e:
+        logger.error(f"修改NFO文件失败: {str(e)}")
+        return nfo_content
 
 
     def recognize_by_meta(self, metainfo: MetaBase) -> Optional[MediaInfo]:
@@ -518,11 +521,8 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
                                                     season=file_meta.begin_season, episode=file_meta.begin_episode)
                     if episode_nfo:
-                        # 修改NFO文件内容
-                        episode_nfo = self.modify_episode_nfo(nfo_content=episode_nfo, 
-                                                               episode_num=file_meta.begin_episode)
-                        logger.info(f"已修改NFO文件内容：将标题修改为'第{file_meta.begin_episode}集'，清空简介字段")
-                        
+                        # 修改这里：在保存NFO文件之前，先修改其内容
+                        episode_nfo = self.modify_episode_nfo(episode_nfo, file_meta.begin_episode)
                         # 保存或上传nfo文件到上级目录
                         if not parent:
                             parent = self.storagechain.get_parent_item(fileitem)
