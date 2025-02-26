@@ -2,6 +2,7 @@ from pathlib import Path
 from threading import Lock
 from typing import Optional, List, Tuple, Union
 import xml.etree.ElementTree as ET
+import re
 
 from app import schemas
 from app.chain import ChainBase
@@ -45,7 +46,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
 
 def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
     """
-    使用正则表达式修改电视剧分集NFO文件内容
+    修改电视剧分集NFO文件内容
     :param nfo_content: 原始NFO内容
     :param episode_num: 集号
     :return: 修改后的NFO内容
@@ -54,32 +55,33 @@ def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
         return nfo_content
     
     try:
-        import re
+        # 保留XML声明
+        xml_declaration = ""
+        if nfo_content.startswith('<?xml'):
+            declaration_end = nfo_content.find('?>') + 2
+            xml_declaration = nfo_content[:declaration_end]
+            nfo_content = nfo_content[declaration_end:]
         
-        # 修改标题
-        nfo_content = re.sub(
-            r'<title>.*?</title>',
-            f'<title>第{episode_num}集</title>',
-            nfo_content
-        )
+        # 解析XML
+        root = ET.fromstring(nfo_content)
         
-        # 清空plot
-        nfo_content = re.sub(
-            r'<plot>.*?</plot>',
-            '<plot><![CDATA[]]></plot>',
-            nfo_content,
-            flags=re.DOTALL
-        )
+        # 修改标题为"第X集"
+        title_element = root.find('.//title')
+        if title_element is not None:
+            title_element.text = f"第{episode_num}集"
         
-        # 清空outline
-        nfo_content = re.sub(
-            r'<outline>.*?</outline>',
-            '<outline><![CDATA[]]></outline>',
-            nfo_content,
-            flags=re.DOTALL
-        )
+        # 清空简介字段
+        plot_element = root.find('.//plot')
+        if plot_element is not None:
+            plot_element.text = "<![CDATA[]]>"
+            
+        outline_element = root.find('.//outline')
+        if outline_element is not None:
+            outline_element.text = "<![CDATA[]]>"
         
-        return nfo_content
+        # 将修改后的XML转回字符串，并添加回XML声明
+        modified_xml = ET.tostring(root, encoding='utf-8').decode('utf-8')
+        return xml_declaration + modified_xml
     except Exception as e:
         logger.error(f"修改NFO文件失败: {str(e)}，将使用原始内容")
         return nfo_content
