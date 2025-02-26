@@ -2,7 +2,6 @@ from pathlib import Path
 from threading import Lock
 from typing import Optional, List, Tuple, Union
 import xml.etree.ElementTree as ET
-import re
 
 from app import schemas
 from app.chain import ChainBase
@@ -44,45 +43,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
         """
         return self.run_module("metadata_nfo", meta=meta, mediainfo=mediainfo, season=season, episode=episode)
 
-def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
-    """
-    使用正则表达式修改电视剧分集NFO文件内容
-    :param nfo_content: 原始NFO内容
-    :param episode_num: 集号
-    :return: 修改后的NFO内容
-    """
-    if not nfo_content:
-        return nfo_content
-    
-    try:
-        
-        # 修改标题
-        nfo_content = re.sub(
-            r'<title>.*?</title>',
-            f'<title>第{episode_num}集</title>',
-            nfo_content
-        )
-        
-        # 清空plot
-        nfo_content = re.sub(
-            r'<plot>.*?</plot>',
-            '<plot><![CDATA[]]></plot>',
-            nfo_content,
-            flags=re.DOTALL
-        )
-        
-        # 清空outline
-        nfo_content = re.sub(
-            r'<outline>.*?</outline>',
-            '<outline><![CDATA[]]></outline>',
-            nfo_content,
-            flags=re.DOTALL
-        )
-        
-        return nfo_content
-    except Exception as e:
-        logger.error(f"修改NFO文件失败: {str(e)}，将使用原始内容")
-        return nfo_content
+
 
 
     def recognize_by_meta(self, metainfo: MetaBase) -> Optional[MediaInfo]:
@@ -528,9 +489,6 @@ def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
                     episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
                                                     season=file_meta.begin_season, episode=file_meta.begin_episode)
                     if episode_nfo:
-                        # 修改NFO内容：清空剧情简介并修改标题
-                        episode_nfo = self.modify_episode_nfo(episode_nfo, file_meta.begin_episode)
-                        
                         # 保存或上传nfo文件到上级目录
                         if not parent:
                             parent = self.storagechain.get_parent_item(fileitem)
