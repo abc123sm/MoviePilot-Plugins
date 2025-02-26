@@ -55,7 +55,6 @@ def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
         return nfo_content
     
     try:
-        import re
         
         # 修改标题
         nfo_content = re.sub(
