@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from app import schemas
-from app.plugins.fangjutoulibraryscraper.media import MediaChain
+from .media import MediaChain
 from app.core.config import settings
 from app.core.metainfo import MetaInfoPath
 from app.db.transferhistory_oper import TransferHistoryOper
