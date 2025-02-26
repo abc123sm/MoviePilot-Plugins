@@ -42,6 +42,38 @@ class MediaChain(ChainBase, metaclass=Singleton):
         """
         return self.run_module("metadata_nfo", meta=meta, mediainfo=mediainfo, season=season, episode=episode)
 
+    def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
+        """
+        修改分集NFO文件内容
+        :param nfo_content: NFO文件内容
+        :param episode_num: 集号
+        :return: 修改后的NFO文件内容
+        """
+        try:
+            # 解析XML内容
+            root = ET.fromstring(nfo_content)
+            
+            # 修改标题为"第X集"
+            title_element = root.find("title")
+            if title_element is not None:
+                title_element.text = f"第{episode_num}集"
+            
+            # 清空简介字段
+            plot_element = root.find("plot")
+            if plot_element is not None:
+                plot_element.text = ""
+                
+            outline_element = root.find("outline")
+            if outline_element is not None:
+                outline_element.text = ""
+            
+            # 转换回字符串
+            return ET.tostring(root, encoding='utf-8', method='xml').decode('utf-8')
+        except Exception as e:
+            logger.error(f"修改NFO文件失败: {str(e)}")
+            return nfo_content
+
+
     def recognize_by_meta(self, metainfo: MetaBase) -> Optional[MediaInfo]:
         """
         根据主副标题识别媒体信息
@@ -484,44 +516,22 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     # 获取集的nfo文件
                     episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
                                                     season=file_meta.begin_season, episode=file_meta.begin_episode)
-                        if episode_nfo:
-                            # 处理电视剧分集的NFO修改逻辑
-                            if mediainfo.type == MediaType.TV and file_meta.begin_episode:
-                                import xml.etree.ElementTree as ET
-                                try:
-                                    root = ET.fromstring(episode_nfo)
-                                    # 修改标题为"第X集"
-                                    title_elem = root.find("title")
-                                    if title_elem is not None:
-                                        title_elem.text = f"第{file_meta.begin_episode}集"
-                                    # 清空plot和outline
-                                    for tag in ["plot", "outline"]:
-                                        elem = root.find(tag)
-                                        if elem is not None:
-                                            elem.text = ""
-                                            # 移除CDATA属性（如果有）
-                                            elem.attrib.pop("{http://www.w3.org/XML/1998/namespace}space", None)
-                                    # 重新生成XML内容
-                                    from io import BytesIO
-                                    buffer = BytesIO()
-                                    ET.ElementTree(root).write(
-                                        buffer, 
-                                        encoding="utf-8", 
-                                        xml_declaration=True,
-                                        short_empty_elements=False
-                                    )
-                                    episode_nfo = buffer.getvalue().decode("utf-8")
-                                except Exception as e:
-                                    logger.error(f"修改NFO内容失败：{str(e)}")
-                            if not parent:
-                                parent = self.storagechain.get_parent_item(fileitem)
-                            __save_file(_fileitem=parent, _path=nfo_path, _content=episode_nfo)
-                            else:
-                                logger.warn(f"{filepath.name} nfo文件生成失败！")
-                        else:
-                            logger.info(f"已存在nfo文件：{nfo_path}")
-                            
-                            
+                    if episode_nfo:
+                        # 修改NFO文件内容
+                        episode_nfo = self.modify_episode_nfo(nfo_content=episode_nfo, 
+                                                               episode_num=file_meta.begin_episode)
+                        logger.info(f"已修改NFO文件内容：将标题修改为'第{file_meta.begin_episode}集'，清空简介字段")
+                        
+                        # 保存或上传nfo文件到上级目录
+                        if not parent:
+                            parent = self.storagechain.get_parent_item(fileitem)
+                        __save_file(_fileitem=parent, _path=nfo_path, _content=episode_nfo)
+                    else:
+                        logger.warn(f"{filepath.name} nfo文件生成失败！")
+                else:
+                    logger.info(f"已存在nfo文件：{nfo_path}")
+
+
                 ####    if episode_nfo:
                 ####        # 保存或上传nfo文件到上级目录
                 ####        if not parent:
@@ -531,6 +541,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
                 ####        logger.warn(f"{filepath.name} nfo文件生成失败！")
                 ####else:
                 ####    logger.info(f"已存在nfo文件：{nfo_path}")
+                
                 #### 获取集的图片
                 ###image_dict = self.metadata_img(mediainfo=file_mediainfo,
                 ###                               season=file_meta.begin_season, episode=file_meta.begin_episode)
