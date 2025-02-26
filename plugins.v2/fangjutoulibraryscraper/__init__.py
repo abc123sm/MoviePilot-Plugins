@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from app import schemas
-from .media import MediaChain
+from app.plugins.fangjutoulibraryscraper.media import MediaChain
 from app.core.config import settings
 from app.core.metainfo import MetaInfoPath
 from app.db.transferhistory_oper import TransferHistoryOper
@@ -27,7 +27,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "1.6.9"
+    plugin_version = "1.7.0"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页
