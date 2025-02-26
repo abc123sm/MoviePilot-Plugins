@@ -482,19 +482,55 @@ class MediaChain(ChainBase, metaclass=Singleton):
                 nfo_path = filepath.with_suffix(".nfo")
                 if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=nfo_path):
                     # 获取集的nfo文件
-                    logger.info(f"获取集的nfo文件_file_meta：\N{file_meta}")
-                    logger.info(f"\N获取集的nfo文件_file_mediainfo：\N{file_mediainfo}")
                     episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
                                                     season=file_meta.begin_season, episode=file_meta.begin_episode)
-                    if episode_nfo:
-                        # 保存或上传nfo文件到上级目录
-                        if not parent:
-                            parent = self.storagechain.get_parent_item(fileitem)
-                        __save_file(_fileitem=parent, _path=nfo_path, _content=episode_nfo)
-                    else:
-                        logger.warn(f"{filepath.name} nfo文件生成失败！")
-                else:
-                    logger.info(f"已存在nfo文件：{nfo_path}")
+                        if episode_nfo:
+                            # 处理电视剧分集的NFO修改逻辑
+                            if mediainfo.type == MediaType.TV and file_meta.begin_episode:
+                                import xml.etree.ElementTree as ET
+                                try:
+                                    root = ET.fromstring(episode_nfo)
+                                    # 修改标题为"第X集"
+                                    title_elem = root.find("title")
+                                    if title_elem is not None:
+                                        title_elem.text = f"第{file_meta.begin_episode}集"
+                                    # 清空plot和outline
+                                    for tag in ["plot", "outline"]:
+                                        elem = root.find(tag)
+                                        if elem is not None:
+                                            elem.text = ""
+                                            # 移除CDATA属性（如果有）
+                                            elem.attrib.pop("{http://www.w3.org/XML/1998/namespace}space", None)
+                                    # 重新生成XML内容
+                                    from io import BytesIO
+                                    buffer = BytesIO()
+                                    ET.ElementTree(root).write(
+                                        buffer, 
+                                        encoding="utf-8", 
+                                        xml_declaration=True,
+                                        short_empty_elements=False
+                                    )
+                                    episode_nfo = buffer.getvalue().decode("utf-8")
+                                except Exception as e:
+                                    logger.error(f"修改NFO内容失败：{str(e)}")
+                            if not parent:
+                                parent = self.storagechain.get_parent_item(fileitem)
+                            __save_file(_fileitem=parent, _path=nfo_path, _content=episode_nfo)
+                            else:
+                                logger.warn(f"{filepath.name} nfo文件生成失败！")
+                        else:
+                            logger.info(f"已存在nfo文件：{nfo_path}")
+                            
+                            
+                ####    if episode_nfo:
+                ####        # 保存或上传nfo文件到上级目录
+                ####        if not parent:
+                ####            parent = self.storagechain.get_parent_item(fileitem)
+                ####        __save_file(_fileitem=parent, _path=nfo_path, _content=episode_nfo)
+                ####    else:
+                ####        logger.warn(f"{filepath.name} nfo文件生成失败！")
+                ####else:
+                ####    logger.info(f"已存在nfo文件：{nfo_path}")
                 #### 获取集的图片
                 ###image_dict = self.metadata_img(mediainfo=file_mediainfo,
                 ###                               season=file_meta.begin_season, episode=file_meta.begin_episode)
