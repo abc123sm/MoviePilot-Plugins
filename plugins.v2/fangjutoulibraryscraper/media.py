@@ -482,7 +482,10 @@ class MediaChain(ChainBase, metaclass=Singleton):
                 nfo_path = filepath.with_suffix(".nfo")
                 if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=nfo_path):
                     # 获取集的nfo文件
-                    logger.info(f"获取集的nfo文件：{file_meta.begin_episode}")
+                    logger.info(f"获取集的nfo文件_file_meta.begin_episode：{file_meta.begin_episode}")
+                    logger.info(f"获取集的nfo文件_file_meta.begin_season：{file_meta.begin_season}")
+                    logger.info(f"获取集的nfo文件_file_meta：\N{file_meta}")
+                    logger.info(f"获取集的nfo文件_file_mediainfo：\N{file_mediainfo}")
                     episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
                                                     season=file_meta.begin_season, episode=file_meta.begin_episode)
                     if episode_nfo:
