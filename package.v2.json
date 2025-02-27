@@ -6,7 +6,7 @@
         "version": "1.7.3",
         "icon": "scraper.png",
         "author": "abc123sm",
-        "level": 2,
+        "level": 1,
         "history": {
             "v1.7.3": "测试"
             "v0.0.0": "啥都没改，先建个项目先"

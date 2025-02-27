@@ -37,7 +37,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 加载顺序
     plugin_order = 1
     # 可使用的用户级别
-    user_level = 2
+    user_level = 1
 
     # 私有属性
     transferhis = None
