@@ -1,7 +1,6 @@
 from pathlib import Path
 from threading import Lock
 from typing import Optional, List, Tuple, Union
-import xml.etree.ElementTree as ET
 
 from app import schemas
 from app.chain import ChainBase
@@ -42,48 +41,6 @@ class MediaChain(ChainBase, metaclass=Singleton):
         :param episode: 集号
         """
         return self.run_module("metadata_nfo", meta=meta, mediainfo=mediainfo, season=season, episode=episode)
-
-def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
-    """
-    使用正则表达式修改电视剧分集NFO文件内容
-    :param nfo_content: 原始NFO内容
-    :param episode_num: 集号
-    :return: 修改后的NFO内容
-    """
-    if not nfo_content:
-        return nfo_content
-    
-    try:
-        import re
-        
-        # 修改标题
-        nfo_content = re.sub(
-            r'<title>.*?</title>',
-            f'<title>第{episode_num}集</title>',
-            nfo_content
-        )
-        
-        # 清空plot
-        nfo_content = re.sub(
-            r'<plot>.*?</plot>',
-            '<plot><![CDATA[]]></plot>',
-            nfo_content,
-            flags=re.DOTALL
-        )
-        
-        # 清空outline
-        nfo_content = re.sub(
-            r'<outline>.*?</outline>',
-            '<outline><![CDATA[]]></outline>',
-            nfo_content,
-            flags=re.DOTALL
-        )
-        
-        return nfo_content
-    except Exception as e:
-        logger.error(f"修改NFO文件失败: {str(e)}，将使用原始内容")
-        return nfo_content
-
 
     def recognize_by_meta(self, metainfo: MetaBase) -> Optional[MediaInfo]:
         """
@@ -521,6 +478,10 @@ def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
                 if not file_mediainfo:
                     logger.warn(f"{filepath.name} 无法识别文件媒体信息！")
                     return
+                
+                episode_title = f"第{file_meta.begin_episode}集"
+                file_mediainfo.title = episode_title
+                file_mediainfo.overview = ""
                 # 是否已存在
                 nfo_path = filepath.with_suffix(".nfo")
                 if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=nfo_path):
@@ -528,9 +489,6 @@ def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
                     episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
                                                     season=file_meta.begin_season, episode=file_meta.begin_episode)
                     if episode_nfo:
-                        # 修改NFO内容：清空剧情简介并修改标题
-                        episode_nfo = self.modify_episode_nfo(episode_nfo, file_meta.begin_episode)
-                        
                         # 保存或上传nfo文件到上级目录
                         if not parent:
                             parent = self.storagechain.get_parent_item(fileitem)
@@ -539,61 +497,24 @@ def modify_episode_nfo(self, nfo_content: str, episode_num: int) -> str:
                         logger.warn(f"{filepath.name} nfo文件生成失败！")
                 else:
                     logger.info(f"已存在nfo文件：{nfo_path}")
-        
-        
-            ### if fileitem.type == "file":
-            ###     # 重新识别季集
-            ###     file_meta = MetaInfoPath(filepath)
-            ###     if not file_meta.begin_episode:
-            ###         logger.warn(f"{filepath.name} 无法识别文件集数！")
-            ###         return
-            ###     file_mediainfo = self.recognize_media(meta=file_meta, tmdbid=mediainfo.tmdb_id)
-            ###     if not file_mediainfo:
-            ###         logger.warn(f"{filepath.name} 无法识别文件媒体信息！")
-            ###         return
-            ###     # 是否已存在
-            ###     nfo_path = filepath.with_suffix(".nfo")
-            ###     if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=nfo_path):
-            ###         # 获取集的nfo文件
-            ###         episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
-            ###                                         season=file_meta.begin_season, episode=file_meta.begin_episode)
-            ###         if episode_nfo:
-            ###             # 保存或上传nfo文件到上级目录
-            ###             if not parent:
-            ###                 parent = self.storagechain.get_parent_item(fileitem)
-            ###             __save_file(_fileitem=parent, _path=nfo_path, _content=episode_nfo)
-            ###         else:
-            ###             logger.warn(f"{filepath.name} nfo文件生成失败！")
-            ###     else:
-            ###         logger.info(f"已存在nfo文件：{nfo_path}")
-
-
-                ####    if episode_nfo:
-                ####        # 保存或上传nfo文件到上级目录
-                ####        if not parent:
-                ####            parent = self.storagechain.get_parent_item(fileitem)
-                ####        __save_file(_fileitem=parent, _path=nfo_path, _content=episode_nfo)
-                ####    else:
-                ####        logger.warn(f"{filepath.name} nfo文件生成失败！")
-                ####else:
-                ####    logger.info(f"已存在nfo文件：{nfo_path}")
-                
-                #### 获取集的图片
-                ###image_dict = self.metadata_img(mediainfo=file_mediainfo,
-                ###                               season=file_meta.begin_season, episode=file_meta.begin_episode)
-                ###if image_dict:
-                ###    for episode, image_url in image_dict.items():
-                ###        image_path = filepath.with_suffix(Path(image_url).suffix)
-                ###        if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=image_path):
-                ###            # 下载图片
-                ###            content = __download_image(image_url)
-                ###            # 保存图片文件到当前目录
-                ###            if content:
-                ###                if not parent:
-                ###                    parent = self.storagechain.get_parent_item(fileitem)
-                ###                __save_file(_fileitem=parent, _path=image_path, _content=content)
-                ###        else:
-                ###            logger.info(f"已存在图片文件：{image_path}")
+                """
+                # 获取集的图片
+                image_dict = self.metadata_img(mediainfo=file_mediainfo,
+                                               season=file_meta.begin_season, episode=file_meta.begin_episode)
+                if image_dict:
+                    for episode, image_url in image_dict.items():
+                        image_path = filepath.with_suffix(Path(image_url).suffix)
+                        if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=image_path):
+                            # 下载图片
+                            content = __download_image(image_url)
+                            # 保存图片文件到当前目录
+                            if content:
+                                if not parent:
+                                    parent = self.storagechain.get_parent_item(fileitem)
+                                __save_file(_fileitem=parent, _path=image_path, _content=content)
+                        else:
+                            logger.info(f"已存在图片文件：{image_path}")
+                """
             else:
                 # 当前为目录，处理目录内的文件
                 files = __list_files(_fileitem=fileitem)
