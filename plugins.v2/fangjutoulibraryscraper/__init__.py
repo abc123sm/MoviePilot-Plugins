@@ -27,7 +27,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "1.0.0"
+    plugin_version = "1.7.3"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页
@@ -37,7 +37,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 加载顺序
     plugin_order = 1
     # 可使用的用户级别
-    user_level = 1
+    user_level = 2
 
     # 私有属性
     transferhis = None
