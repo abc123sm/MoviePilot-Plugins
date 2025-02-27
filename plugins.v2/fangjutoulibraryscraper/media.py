@@ -479,9 +479,9 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     logger.warn(f"{filepath.name} 无法识别文件媒体信息！")
                     return
                 
-                episode_title = f"第{file_meta.begin_episode}集"
-                file_mediainfo.title = episode_title
-                file_mediainfo.overview = ""
+                #episode_title = f"第{file_meta.begin_episode}集"
+                #file_mediainfo.title = episode_title
+                #file_mediainfo.overview = ""
                 # 是否已存在
                 nfo_path = filepath.with_suffix(".nfo")
                 if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=nfo_path):
