@@ -479,6 +479,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     logger.warn(f"{filepath.name} 无法识别文件媒体信息！")
                     return
                 
+                # 防剧透
                 episode_title = f"第{file_meta.begin_episode}集"
                 file_mediainfo.title = episode_title
                 file_mediainfo.overview = ""
