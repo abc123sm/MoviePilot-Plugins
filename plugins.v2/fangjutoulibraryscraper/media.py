@@ -308,6 +308,8 @@ class MediaChain(ChainBase, metaclass=Singleton):
         meta: MetaBase = event_data.get("meta")
         mediainfo: MediaInfo = event_data.get("mediainfo")
         overwrite = event_data.get("overwrite", False)
+        fenji_biaoti_setting = event_data.get("fenji_biaoti_setting", False)
+        fenji_tupian_setting = event_data.get("fenji_tupian_setting", False)
         if not fileitem:
             return
         # 刮削锁
@@ -490,7 +492,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     if episode_nfo:
                         # 修改标题为 "第X集"
                         import re
-                        if not fenji_biaoti:
+                        if not fenji_biaoti_setting:
                             episode_number = file_meta.begin_episode
                             episode_title = f"第{episode_number}集"
                             # 替换标题
@@ -512,7 +514,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     logger.info(f"已存在nfo文件：{nfo_path}")
 
                 # 获取集的图片
-                if fenji_tupian:
+                if fenji_tupian_setting:
                     image_dict = self.metadata_img(mediainfo=file_mediainfo,
                                                    season=file_meta.begin_season, episode=file_meta.begin_episode)
                     if image_dict:
