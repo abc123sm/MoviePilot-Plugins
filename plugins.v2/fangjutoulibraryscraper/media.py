@@ -40,6 +40,10 @@ class MediaChain(ChainBase, metaclass=Singleton):
         :param season: 季号
         :param episode: 集号
         """
+        logger.info(f"meta = {meta}")
+        logger.info(f"mediainfo = {mediainfo}")
+        logger.info(f"meta = {season}")
+        logger.info(f"meta = {episode}")
         return self.run_module("metadata_nfo", meta=meta, mediainfo=mediainfo, season=season, episode=episode)
 
     def recognize_by_meta(self, metainfo: MetaBase) -> Optional[MediaInfo]:
@@ -480,11 +484,11 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     return
                 
                 # 防剧透
-                episode_title = f"第{file_meta.begin_episode}集"
-                file_mediainfo.title = episode_title
-                file_mediainfo.overview = ""
-                logger.info(f"file_mediainfo = {file_mediainfo}")
-                logger.info(f"file_meta = {file_meta}")
+                #episode_title = f"第{file_meta.begin_episode}集"
+                #file_mediainfo.title = episode_title
+                #file_mediainfo.overview = ""
+                #logger.info(f"file_mediainfo = {file_mediainfo}")
+                #logger.info(f"file_meta = {file_meta}")
                 # 是否已存在
                 nfo_path = filepath.with_suffix(".nfo")
                 if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=nfo_path):
