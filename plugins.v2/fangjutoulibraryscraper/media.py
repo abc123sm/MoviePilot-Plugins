@@ -479,19 +479,30 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     logger.warn(f"{filepath.name} 无法识别文件媒体信息！")
                     return
                 
-                # 防剧透
-                #episode_title = f"第{file_meta.begin_episode}集"
-                #file_mediainfo.title = episode_title
-                #file_mediainfo.overview = ""
-                #logger.info(f"file_mediainfo = {file_mediainfo}")
-                #logger.info(f"file_meta = {file_meta}")
                 # 是否已存在
                 nfo_path = filepath.with_suffix(".nfo")
                 if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=nfo_path):
                     # 获取集的nfo文件
                     episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
                                                     season=file_meta.begin_season, episode=file_meta.begin_episode)
-                    logger.info(f"episode_nfo：{episode_nfo}")
+                    logger.info(f"修改前episode_nfo：{episode_nfo}")
+                    
+                    # 修改episode_nfo内容
+                    if episode_nfo:
+                        # 修改标题为 "第X集"
+                        import re
+                        episode_number = file_meta.begin_episode
+                        episode_title = f"第{episode_number}集"
+                        # 替换标题
+                        episode_nfo = re.sub(r'<title>.*?</title>', f'<title>{episode_title}</title>', episode_nfo.decode('utf-8'), flags=re.DOTALL)
+                        # 清空plot和outline
+                        episode_nfo = re.sub(r'<plot>.*?</plot>', '<plot></plot>', episode_nfo, flags=re.DOTALL)
+                        episode_nfo = re.sub(r'<outline>.*?</outline>', '<outline></outline>', episode_nfo, flags=re.DOTALL)
+                        # 转回字节
+                        episode_nfo = episode_nfo.encode('utf-8')
+                    
+                    logger.info(f"修改后episode_nfo：{episode_nfo}")
+                    
                     if episode_nfo:
                         # 保存或上传nfo文件到上级目录
                         if not parent:
