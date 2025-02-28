@@ -23,11 +23,11 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件名称
     plugin_name = "防剧透媒体库刮削"
     # 插件描述
-    plugin_desc = "还在写代码，本插件目前不可用，定时对媒体库进行刮削，补齐缺失元数据和图片，同时不刮削分集标题、分集简介、分集封面，以防止剧透。"
+    plugin_desc = "定时对媒体库进行刮削，补齐缺失元数据和图片，同时不刮削分集标题、分集简介、分集封面，以防止剧透。"
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "1.0"
+    plugin_version = "1.1"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页
@@ -59,6 +59,8 @@ class FangjutouLibraryScraper(_PluginBase):
         # 读取配置
         if config:
             self._enabled = config.get("enabled")
+            self._fenji_biaoti = config.get("fenji_biaoti")
+            self._fenji_tupian = config.get("fenji_tupian")
             self._onlyonce = config.get("onlyonce")
             self._cron = config.get("cron")
             self._mode = config.get("mode") or ""
@@ -185,6 +187,43 @@ class FangjutouLibraryScraper(_PluginBase):
                                 },
                                 'content': [
                                     {
+                                        'component': 'VSwitch',
+                                        'props': {
+                                            'model': 'fenji_biaoti',
+                                            'label': '刮削分集标题',
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                'component': 'VCol',
+                                'props': {
+                                    'cols': 12,
+                                    'md': 6
+                                },
+                                'content': [
+                                    {
+                                        'component': 'VSwitch',
+                                        'props': {
+                                            'model': 'fenji_tupian',
+                                            'label': '刮削分集图片',
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        'component': 'VRow',
+                        'content': [
+                            {
+                                'component': 'VCol',
+                                'props': {
+                                    'cols': 12,
+                                    'md': 6
+                                },
+                                'content': [
+                                    {
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'mode',
@@ -286,6 +325,8 @@ class FangjutouLibraryScraper(_PluginBase):
             }
         ], {
             "enabled": False,
+            "fenji_biaoti":False,
+            "fenji_tupian":False,
             "cron": "0 0 */7 * *",
             "mode": "",
             "scraper_paths": "",
@@ -420,6 +461,8 @@ class FangjutouLibraryScraper(_PluginBase):
             ),
             mediainfo=mediainfo,
             overwrite=True if self._mode else False
+            fenji_biaoti=self._fenji_biaoti,  # 传递分集标题开关
+            fenji_tupian=self._fenji_tupian   # 传递分集图片开关
         )
         logger.info(f"{path} 刮削完成")
 

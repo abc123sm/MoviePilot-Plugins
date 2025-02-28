@@ -490,10 +490,11 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     if episode_nfo:
                         # 修改标题为 "第X集"
                         import re
-                        episode_number = file_meta.begin_episode
-                        episode_title = f"第{episode_number}集"
-                        # 替换标题
-                        episode_nfo = re.sub(r'<title>.*?</title>', f'<title>{episode_title}</title>', episode_nfo.decode('utf-8'), flags=re.DOTALL)
+                        if not fenji_biaoti:
+                            episode_number = file_meta.begin_episode
+                            episode_title = f"第{episode_number}集"
+                            # 替换标题
+                            episode_nfo = re.sub(r'<title>.*?</title>', f'<title>{episode_title}</title>', episode_nfo.decode('utf-8'), flags=re.DOTALL)
                         # 清空plot和outline
                         episode_nfo = re.sub(r'<plot>.*?</plot>', '<plot><![CDATA[]]></plot>', episode_nfo, flags=re.DOTALL)
                         episode_nfo = re.sub(r'<outline>.*?</outline>', '<outline><![CDATA[]]></outline>', episode_nfo, flags=re.DOTALL)
@@ -509,6 +510,27 @@ class MediaChain(ChainBase, metaclass=Singleton):
                         logger.warn(f"{filepath.name} nfo文件生成失败！")
                 else:
                     logger.info(f"已存在nfo文件：{nfo_path}")
+
+                # 获取集的图片
+                if not fenji_tupian:
+                    image_dict = self.metadata_img(mediainfo=file_mediainfo,
+                                                   season=file_meta.begin_season, episode=file_meta.begin_episode)
+                    if image_dict:
+                        for episode, image_url in image_dict.items():
+                            image_path = filepath.with_suffix(Path(image_url).suffix)
+                            if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=image_path):
+                                # 下载图片
+                                content = __download_image(image_url)
+                                # 保存图片文件到当前目录
+                                if content:
+                                    if not parent:
+                                        parent = self.storagechain.get_parent_item(fileitem)
+                                    __save_file(_fileitem=parent, _path=image_path, _content=content)
+                            else:
+                                logger.info(f"已存在图片文件：{image_path}")
+                    
+                
+                
                 """
                 # 获取集的图片
                 image_dict = self.metadata_img(mediainfo=file_mediainfo,
