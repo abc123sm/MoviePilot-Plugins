@@ -40,8 +40,6 @@ class MediaChain(ChainBase, metaclass=Singleton):
         :param season: 季号
         :param episode: 集号
         """
-        metadata_nfo_123 =self.run_module("metadata_nfo", meta=meta, mediainfo=mediainfo, season=season, episode=episode
-        logger.info(f"metadata_nfo_123 = {metadata_nfo_123}")
         return self.run_module("metadata_nfo", meta=meta, mediainfo=mediainfo, season=season, episode=episode)
 
     def recognize_by_meta(self, metainfo: MetaBase) -> Optional[MediaInfo]:
@@ -493,6 +491,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     # 获取集的nfo文件
                     episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
                                                     season=file_meta.begin_season, episode=file_meta.begin_episode)
+                    logger.info(f"episode_nfo：{episode_nfo}")
                     if episode_nfo:
                         # 保存或上传nfo文件到上级目录
                         if not parent:
