@@ -27,7 +27,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "2.0.0"
+    plugin_version = "2.0.1"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页
@@ -460,7 +460,7 @@ class FangjutouLibraryScraper(_PluginBase):
                 modify_time=path.stat().st_mtime,
             ),
             mediainfo=mediainfo,
-            overwrite=True if self._mode else False
+            overwrite=True if self._mode else False,
             fenji_biaoti=self._fenji_biaoti,  # 传递分集标题开关
             fenji_tupian=self._fenji_tupian   # 传递分集图片开关
         )
