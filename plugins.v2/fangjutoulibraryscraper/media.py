@@ -40,10 +40,8 @@ class MediaChain(ChainBase, metaclass=Singleton):
         :param season: 季号
         :param episode: 集号
         """
-        logger.info(f"meta = {meta}")
-        logger.info(f"mediainfo = {mediainfo}")
-        logger.info(f"meta = {season}")
-        logger.info(f"meta = {episode}")
+        metadata_nfo_123 =self.run_module("metadata_nfo", meta=meta, mediainfo=mediainfo, season=season, episode=episode
+        logger.info(f"metadata_nfo_123 = {metadata_nfo_123}")
         return self.run_module("metadata_nfo", meta=meta, mediainfo=mediainfo, season=season, episode=episode)
 
     def recognize_by_meta(self, metainfo: MetaBase) -> Optional[MediaInfo]:
