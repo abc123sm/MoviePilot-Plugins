@@ -485,7 +485,6 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     # 获取集的nfo文件
                     episode_nfo = self.metadata_nfo(meta=file_meta, mediainfo=file_mediainfo,
                                                     season=file_meta.begin_season, episode=file_meta.begin_episode)
-                    logger.info(f"修改前episode_nfo：{episode_nfo}")
                     
                     # 修改episode_nfo内容
                     if episode_nfo:
@@ -496,12 +495,10 @@ class MediaChain(ChainBase, metaclass=Singleton):
                         # 替换标题
                         episode_nfo = re.sub(r'<title>.*?</title>', f'<title>{episode_title}</title>', episode_nfo.decode('utf-8'), flags=re.DOTALL)
                         # 清空plot和outline
-                        episode_nfo = re.sub(r'<plot>.*?</plot>', '<plot></plot>', episode_nfo, flags=re.DOTALL)
-                        episode_nfo = re.sub(r'<outline>.*?</outline>', '<outline></outline>', episode_nfo, flags=re.DOTALL)
+                        episode_nfo = re.sub(r'<plot>.*?</plot>', '<plot><![CDATA[]]></plot>', episode_nfo, flags=re.DOTALL)
+                        episode_nfo = re.sub(r'<outline>.*?</outline>', '<outline><![CDATA[]]></outline>', episode_nfo, flags=re.DOTALL)
                         # 转回字节
                         episode_nfo = episode_nfo.encode('utf-8')
-                    
-                    logger.info(f"修改后episode_nfo：{episode_nfo}")
                     
                     if episode_nfo:
                         # 保存或上传nfo文件到上级目录
