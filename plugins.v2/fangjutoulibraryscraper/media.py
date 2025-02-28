@@ -512,7 +512,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     logger.info(f"已存在nfo文件：{nfo_path}")
 
                 # 获取集的图片
-                if not fenji_tupian:
+                if fenji_tupian:
                     image_dict = self.metadata_img(mediainfo=file_mediainfo,
                                                    season=file_meta.begin_season, episode=file_meta.begin_episode)
                     if image_dict:
