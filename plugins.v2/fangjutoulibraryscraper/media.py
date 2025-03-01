@@ -319,7 +319,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
             scraping_files.append(fileitem.path)
         try:
             # 执行刮削
-            self.scrape_metadata(fileitem=fileitem, meta=meta, mediainfo=mediainfo, overwrite=overwrite)
+            self.scrape_metadata(fileitem=fileitem, meta=meta, mediainfo=mediainfo, overwrite=overwrite,fenji_biaoti_setting=fenji_biaoti_setting,fenji_tupian_setting=fenji_tupian_setting)
         finally:
             # 释放锁
             with scraping_lock:
@@ -328,7 +328,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
     def scrape_metadata(self, fileitem: schemas.FileItem,
                         meta: MetaBase = None, mediainfo: MediaInfo = None,
                         init_folder: bool = True, parent: schemas.FileItem = None,
-                        overwrite: bool = False):
+                        overwrite: bool = False,fenji_biaoti_setting: bool = False,fenji_tupian_setting: bool = False,):
         """
         手动刮削媒体信息
         :param fileitem: 刮削目录或文件
