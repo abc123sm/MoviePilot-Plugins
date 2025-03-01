@@ -27,7 +27,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "2.0.3"
+    plugin_version = "2.0.4"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页
@@ -87,6 +87,8 @@ class FangjutouLibraryScraper(_PluginBase):
                 self.update_config({
                     "onlyonce": False,
                     "enabled": self._enabled,
+                    "fenji_biaoti": self._fenji_biaoti,
+                    "fenji_tupian": self._fenji_tupian,
                     "cron": self._cron,
                     "mode": self._mode,
                     "scraper_paths": self._scraper_paths,
@@ -406,6 +408,10 @@ class FangjutouLibraryScraper(_PluginBase):
         if scraper_paths:
             for item in scraper_paths:
                 logger.info(f"开始刮削目录：{item[0]} ...")
+                logger.info(f"分集标题开关：{self._fenji_biaoti}，分集图片开关：{self._fenji_tupian}")
+                fenji_biaoti_setting1 = True if self._fenji_biaoti else False
+                fenji_tupian_setting1 = True if self._fenji_tupian else False
+                logger.info(f"分集标题开关：{fenji_biaoti_setting1}，分集图片开关：{fenji_tupian_setting1}")
                 self.__scrape_dir(path=item[0], mtype=item[1])
         else:
             logger.info(f"未发现需要刮削的目录")
