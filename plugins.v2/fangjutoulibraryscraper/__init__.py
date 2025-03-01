@@ -27,7 +27,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "2.0.5"
+    plugin_version = "2.0.6"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页
@@ -62,7 +62,7 @@ class FangjutouLibraryScraper(_PluginBase):
         if config:
             self._enabled = config.get("enabled")
             self._fenji_biaoti = config.get("fenji_biaoti", "") == "True"
-            self._fenji_tupian = config.get("fenji_tupian") == "True"
+            self._fenji_tupian = config.get("fenji_tupian", "") == "True"
             self._onlyonce = config.get("onlyonce")
             self._cron = config.get("cron")
             self._mode = config.get("mode") or ""
@@ -87,8 +87,6 @@ class FangjutouLibraryScraper(_PluginBase):
                 self.update_config({
                     "onlyonce": False,
                     "enabled": self._enabled,
-                    "fenji_biaoti": self._fenji_biaoti,
-                    "fenji_tupian": self._fenji_tupian,
                     "cron": self._cron,
                     "mode": self._mode,
                     "scraper_paths": self._scraper_paths,
