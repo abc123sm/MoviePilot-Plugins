@@ -447,7 +447,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
                         self.scrape_metadata(fileitem=file,
                                              meta=meta, mediainfo=mediainfo,
                                              init_folder=False, parent=fileitem,
-                                             overwrite=overwrite)
+                                             overwrite=overwrite,fenji_biaoti_setting=fenji_biaoti_setting,fenji_tupian_setting=fenji_tupian_setting)
                 # 生成目录内图片文件
                 if init_folder:
                     # 图片
@@ -559,7 +559,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
                                          meta=meta, mediainfo=mediainfo,
                                          parent=fileitem if file.type == "file" else None,
                                          init_folder=True if file.type == "dir" else False,
-                                         overwrite=overwrite)
+                                         overwrite=overwrite,fenji_biaoti_setting=fenji_biaoti_setting,fenji_tupian_setting=fenji_tupian_setting)
                 # 生成目录的nfo和图片
                 if init_folder:
                     # 识别文件夹名称
