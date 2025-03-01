@@ -308,8 +308,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
         meta: MetaBase = event_data.get("meta")
         mediainfo: MediaInfo = event_data.get("mediainfo")
         overwrite = event_data.get("overwrite", False)
-        fenji_biaoti_setting = event_data.get("fenji_biaoti_setting", False)
-        fenji_tupian_setting = event_data.get("fenji_tupian_setting", False)
+
         if not fileitem:
             return
         # 刮削锁
@@ -319,7 +318,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
             scraping_files.append(fileitem.path)
         try:
             # 执行刮削
-            self.scrape_metadata(fileitem=fileitem, meta=meta, mediainfo=mediainfo, overwrite=overwrite,fenji_biaoti_setting=fenji_biaoti_setting,fenji_tupian_setting=fenji_tupian_setting)
+            self.scrape_metadata(fileitem=fileitem, meta=meta, mediainfo=mediainfo, overwrite=overwrite)
         finally:
             # 释放锁
             with scraping_lock:
@@ -328,7 +327,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
     def scrape_metadata(self, fileitem: schemas.FileItem,
                         meta: MetaBase = None, mediainfo: MediaInfo = None,
                         init_folder: bool = True, parent: schemas.FileItem = None,
-                        overwrite: bool = False,fenji_biaoti_setting: bool = False,fenji_tupian_setting: bool = False,):
+                        overwrite: bool = False):
         """
         手动刮削媒体信息
         :param fileitem: 刮削目录或文件
@@ -447,7 +446,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
                         self.scrape_metadata(fileitem=file,
                                              meta=meta, mediainfo=mediainfo,
                                              init_folder=False, parent=fileitem,
-                                             overwrite=overwrite,fenji_biaoti_setting=fenji_biaoti_setting,fenji_tupian_setting=fenji_tupian_setting)
+                                             overwrite=overwrite)
                 # 生成目录内图片文件
                 if init_folder:
                     # 图片
@@ -492,11 +491,10 @@ class MediaChain(ChainBase, metaclass=Singleton):
                     if episode_nfo:
                         # 修改标题为 "第X集"
                         import re
-                        if not fenji_biaoti_setting:
-                            episode_number = file_meta.begin_episode
-                            episode_title = f"第{episode_number}集"
-                            # 替换标题
-                            episode_nfo = re.sub(r'<title>.*?</title>', f'<title>{episode_title}</title>', episode_nfo.decode('utf-8'), flags=re.DOTALL)
+                        episode_number = file_meta.begin_episode
+                        episode_title = f"第{episode_number}集"
+                        # 替换标题
+                        episode_nfo = re.sub(r'<title>.*?</title>', f'<title>{episode_title}</title>', episode_nfo.decode('utf-8'), flags=re.DOTALL)
                         # 清空plot和outline
                         episode_nfo = re.sub(r'<plot>.*?</plot>', '<plot><![CDATA[]]></plot>', episode_nfo, flags=re.DOTALL)
                         episode_nfo = re.sub(r'<outline>.*?</outline>', '<outline><![CDATA[]]></outline>', episode_nfo, flags=re.DOTALL)
@@ -513,25 +511,6 @@ class MediaChain(ChainBase, metaclass=Singleton):
                 else:
                     logger.info(f"已存在nfo文件：{nfo_path}")
 
-                # 获取集的图片
-                if fenji_tupian_setting:
-                    image_dict = self.metadata_img(mediainfo=file_mediainfo,
-                                                   season=file_meta.begin_season, episode=file_meta.begin_episode)
-                    if image_dict:
-                        for episode, image_url in image_dict.items():
-                            image_path = filepath.with_suffix(Path(image_url).suffix)
-                            if overwrite or not self.storagechain.get_file_item(storage=fileitem.storage, path=image_path):
-                                # 下载图片
-                                content = __download_image(image_url)
-                                # 保存图片文件到当前目录
-                                if content:
-                                    if not parent:
-                                        parent = self.storagechain.get_parent_item(fileitem)
-                                    __save_file(_fileitem=parent, _path=image_path, _content=content)
-                            else:
-                                logger.info(f"已存在图片文件：{image_path}")
-                    
-                
                 
                 """
                 # 获取集的图片
@@ -559,7 +538,7 @@ class MediaChain(ChainBase, metaclass=Singleton):
                                          meta=meta, mediainfo=mediainfo,
                                          parent=fileitem if file.type == "file" else None,
                                          init_folder=True if file.type == "dir" else False,
-                                         overwrite=overwrite,fenji_biaoti_setting=fenji_biaoti_setting,fenji_tupian_setting=fenji_tupian_setting)
+                                         overwrite=overwrite)
                 # 生成目录的nfo和图片
                 if init_folder:
                     # 识别文件夹名称

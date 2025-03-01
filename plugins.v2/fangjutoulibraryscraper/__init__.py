@@ -27,7 +27,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "2.0.8"
+    plugin_version = "2.0.9"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页
@@ -46,8 +46,6 @@ class FangjutouLibraryScraper(_PluginBase):
     _scraper = None
     # 限速开关
     _enabled = False
-    _fenji_biaoti = False
-    _fenji_tupian = False
     _onlyonce = False
     _cron = None
     _mode = ""
@@ -61,8 +59,6 @@ class FangjutouLibraryScraper(_PluginBase):
         # 读取配置
         if config:
             self._enabled = config.get("enabled")
-            self._fenji_biaoti = config.get("fenji_biaoti")
-            self._fenji_tupian = config.get("fenji_tupian")
             self._onlyonce = config.get("onlyonce")
             self._cron = config.get("cron")
             self._mode = config.get("mode") or ""
@@ -190,43 +186,6 @@ class FangjutouLibraryScraper(_PluginBase):
                                 },
                                 'content': [
                                     {
-                                        'component': 'VSwitch',
-                                        'props': {
-                                            'model': 'fenji_biaoti',
-                                            'label': '刮削分集标题',
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                'component': 'VCol',
-                                'props': {
-                                    'cols': 12,
-                                    'md': 6
-                                },
-                                'content': [
-                                    {
-                                        'component': 'VSwitch',
-                                        'props': {
-                                            'model': 'fenji_tupian',
-                                            'label': '刮削分集图片',
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        'component': 'VRow',
-                        'content': [
-                            {
-                                'component': 'VCol',
-                                'props': {
-                                    'cols': 12,
-                                    'md': 6
-                                },
-                                'content': [
-                                    {
                                         'component': 'VSelect',
                                         'props': {
                                             'model': 'mode',
@@ -328,8 +287,6 @@ class FangjutouLibraryScraper(_PluginBase):
             }
         ], {
             "enabled": False,
-            "fenji_biaoti":False,
-            "fenji_tupian":False,
             "cron": "0 0 */7 * *",
             "mode": "",
             "scraper_paths": "",
@@ -407,10 +364,6 @@ class FangjutouLibraryScraper(_PluginBase):
         if scraper_paths:
             for item in scraper_paths:
                 logger.info(f"开始刮削目录：{item[0]} ...")
-                #logger.info(f"分集标题开关：{self._fenji_biaoti}，分集图片开关：{self._fenji_tupian}")
-                #fenji_biaoti_setting1 = True if self._fenji_biaoti else False
-                #fenji_tupian_setting1 = True if self._fenji_tupian else False
-                #logger.info(f"分集标题开关：{fenji_biaoti_setting1}，分集图片开关：{fenji_tupian_setting1}")
                 self.__scrape_dir(path=item[0], mtype=item[1])
         else:
             logger.info(f"未发现需要刮削的目录")
@@ -467,9 +420,7 @@ class FangjutouLibraryScraper(_PluginBase):
                 modify_time=path.stat().st_mtime,
             ),
             mediainfo=mediainfo,
-            overwrite=True if self._mode else False,
-            fenji_biaoti_setting = self._fenji_biaoti,  # 传递分集标题开关
-            fenji_tupian_setting = self._fenji_tupian   # 传递分集图片开关
+            overwrite=True if self._mode else False
         )
         logger.info(f"{path} 刮削完成")
 
