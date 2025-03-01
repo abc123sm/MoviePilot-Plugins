@@ -27,7 +27,7 @@ class FangjutouLibraryScraper(_PluginBase):
     # 插件图标
     plugin_icon = "scraper.png"
     # 插件版本
-    plugin_version = "2.0.4"
+    plugin_version = "2.0.5"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页
@@ -61,8 +61,8 @@ class FangjutouLibraryScraper(_PluginBase):
         # 读取配置
         if config:
             self._enabled = config.get("enabled")
-            self._fenji_biaoti = config.get("fenji_biaoti")
-            self._fenji_tupian = config.get("fenji_tupian")
+            self._fenji_biaoti = config.get("fenji_biaoti", "") == "True"
+            self._fenji_tupian = config.get("fenji_tupian") == "True"
             self._onlyonce = config.get("onlyonce")
             self._cron = config.get("cron")
             self._mode = config.get("mode") or ""
@@ -101,6 +101,7 @@ class FangjutouLibraryScraper(_PluginBase):
 
     def get_state(self) -> bool:
         return self._enabled
+        
 
     @staticmethod
     def get_command() -> List[Dict[str, Any]]:
@@ -409,9 +410,9 @@ class FangjutouLibraryScraper(_PluginBase):
             for item in scraper_paths:
                 logger.info(f"开始刮削目录：{item[0]} ...")
                 logger.info(f"分集标题开关：{self._fenji_biaoti}，分集图片开关：{self._fenji_tupian}")
-                fenji_biaoti_setting1 = True if self._fenji_biaoti else False
-                fenji_tupian_setting1 = True if self._fenji_tupian else False
-                logger.info(f"分集标题开关：{fenji_biaoti_setting1}，分集图片开关：{fenji_tupian_setting1}")
+                #fenji_biaoti_setting1 = True if self._fenji_biaoti else False
+                #fenji_tupian_setting1 = True if self._fenji_tupian else False
+                #logger.info(f"分集标题开关：{fenji_biaoti_setting1}，分集图片开关：{fenji_tupian_setting1}")
                 self.__scrape_dir(path=item[0], mtype=item[1])
         else:
             logger.info(f"未发现需要刮削的目录")
@@ -469,8 +470,8 @@ class FangjutouLibraryScraper(_PluginBase):
             ),
             mediainfo=mediainfo,
             overwrite=True if self._mode else False,
-            fenji_biaoti_setting = True if self._fenji_biaoti else False,  # 传递分集标题开关
-            fenji_tupian_setting = True if self._fenji_tupian else False   # 传递分集图片开关
+            fenji_biaoti_setting = self._fenji_biaoti,  # 传递分集标题开关
+            fenji_tupian_setting = self._fenji_tupian   # 传递分集图片开关
         )
         logger.info(f"{path} 刮削完成")
 
