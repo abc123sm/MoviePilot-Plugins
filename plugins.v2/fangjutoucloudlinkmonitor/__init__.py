@@ -59,11 +59,11 @@ class FangjutouCloudLinkMonitor(_PluginBase):
     # 插件名称
     plugin_name = "防剧透目录实时监控"
     # 插件描述
-    plugin_desc = "测试中，本插件目前大概不可用，别装，监控目录文件变化，自动转移媒体文件。"
+    plugin_desc = "监控目录文件变化，自动转移媒体文件，刮削时不刮削分集标题、简介，防止剧透。"
     # 插件图标
     plugin_icon = "Linkease_A.png"
     # 插件版本
-    plugin_version = "1.0.1"
+    plugin_version = "1.0.2"
     # 插件作者
     plugin_author = "abc123sm"
     # 作者主页

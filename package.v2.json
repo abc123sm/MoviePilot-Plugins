@@ -15,13 +15,14 @@
     },
     "FangjutouCloudLinkMonitor": {
         "name": "防剧透目录实时监控",
-        "description": "监控云盘目录文件变化，自动转移媒体文件。",
+        "description": "监控云盘目录文件变化，自动转移媒体文件，刮削时不刮削分集标题、简介，防止剧透。",
         "labels": "云盘,工具",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "icon": "Linkease_A.png",
         "author": "abc123sm",
         "level": 1,
 		"history": {
+            "v1.0.2": "能用了",
             "v1.0.1": "忘记改作者名了……",
             "v1.0.0": "啥都没改，先建个项目先"
         }
